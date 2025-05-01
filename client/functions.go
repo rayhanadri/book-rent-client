@@ -782,9 +782,9 @@ func RentABook() {
 	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rentResp.ID),
+		fmt.Sprintf("%d", rentResp.BookID),
 		rentResp.Book.Title,
 		rentResp.Book.Author,
-		fmt.Sprintf("%d", rentResp.BookID),
 		fmt.Sprintf("%d", rentResp.Quantity),
 		fmt.Sprintf("%d", rentResp.TotalPrice),
 		rentResp.RentStatus,
@@ -950,9 +950,9 @@ func RentABook() {
 	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rentResp2.ID),
+		fmt.Sprintf("%d", rentResp2.BookID),
 		rentResp2.Book.Title,
 		rentResp2.Book.Author,
-		fmt.Sprintf("%d", rentResp2.BookID),
 		fmt.Sprintf("%d", rentResp2.Quantity),
 		fmt.Sprintf("%d", rentResp2.TotalPrice),
 		rentResp2.RentStatus,
@@ -1028,9 +1028,9 @@ func ReturnABook() {
 	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rent.ID),
+		fmt.Sprintf("%d", rent.BookID),
 		rent.Book.Title,
 		rent.Book.Author,
-		fmt.Sprintf("%d", rent.BookID),
 		fmt.Sprintf("%d", rent.Quantity),
 		fmt.Sprintf("%d", rent.TotalPrice),
 		rent.RentStatus,
@@ -1089,9 +1089,9 @@ func GetAllRentHistory() {
 	for _, rent := range rents {
 		table.Append([]string{
 			fmt.Sprintf("%d", rent.ID),
+			fmt.Sprintf("%d", rent.BookID),
 			rent.Book.Title,
 			rent.Book.Author,
-			fmt.Sprintf("%d", rent.BookID),
 			fmt.Sprintf("%d", rent.Quantity),
 			fmt.Sprintf("%d", rent.TotalPrice),
 			rent.RentStatus,
