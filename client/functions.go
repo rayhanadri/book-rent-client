@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"library-client/variables"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/term"
@@ -19,21 +22,31 @@ import (
 func Register() {
 	// Register a new user
 	fmt.Println("Registering a new account...")
+
+	reader := bufio.NewReader(os.Stdin)
+
 	// craete a new user struct to hold the registration data
 	var newUser model.User
 	// get user input for name, email, and password
 	fmt.Print("Enter your name: ")
-	_, err := fmt.Scanf("%[^\n]", &newUser.Name)
+	newUserName, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error reading name:", err)
 		return
 	}
+	newUserName = strings.TrimSpace(newUserName)
+	newUser.Name = newUserName
+
 	fmt.Print("Enter your email: ")
-	_, err = fmt.Scanln(&newUser.Email)
+	newUserEmail, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error reading email:", err)
 		return
 	}
+	newUserEmail = strings.TrimSpace(newUserEmail)
+	newUser.Email = newUserEmail
+
+	fmt.Print("Enter your password: ")
 	bytePassword, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		fmt.Println("Error reading password:", err)
@@ -41,6 +54,9 @@ func Register() {
 	}
 	newUser.Password = string(bytePassword)
 	fmt.Println() // Print a newline after password input
+
+	fmt.Println("Password:", newUser.Password)
+
 	newUser.Role = "user"
 	newUser.Status = "ACTIVE"
 	newUser.Balance = 0
@@ -74,20 +90,48 @@ func Register() {
 
 		return
 	}
+
+	var user model.User
+	dataBytes, err := json.Marshal(registrationResponse.Data.(map[string]interface{}))
+	if err != nil {
+		fmt.Println("Error registering: Error marshalling user data")
+		return
+	}
+	err = json.Unmarshal(dataBytes, &user)
+	if err != nil {
+		fmt.Println("Error registering: Error unmarshalling user data")
+		return
+	}
+
+	tablewriter := tablewriter.NewWriter(os.Stdout)
+	tablewriter.SetHeader([]string{"ID", "Name", "Email", "Status"})
+	tablewriter.Append([]string{
+		fmt.Sprintf("%d", user.ID),
+		user.Name,
+		user.Email,
+		user.Status,
+	})
+	tablewriter.Render()
+
+	fmt.Println("Registration successful!, you can login now")
 }
 
 func Login() {
 	// Login to the account
 	fmt.Println("Logging into your account...")
 
+	reader := bufio.NewReader(os.Stdin)
+
 	// get user input for email and password
 	var email, password string
 	fmt.Print("Enter your email: ")
-	_, err := fmt.Scanln(&email)
+	email, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error reading email:", err)
 		return
 	}
+	email = strings.TrimSpace(email)
+
 	fmt.Print("Enter your password: ")
 	bytePassword, err := term.ReadPassword(int(os.Stdin.Fd()))
 	password = string(bytePassword)
@@ -96,7 +140,7 @@ func Login() {
 		fmt.Println("Error reading password:", err)
 		return
 	}
-
+	fmt.Println("Password:", password)
 	// Check if the user is already logged in
 	if variables.AccessToken != "" {
 		fmt.Println("You are already logged in.")
@@ -351,6 +395,8 @@ func TopupBalance(AmountTopup int) {
 	// Topup balance using payment gateway
 	fmt.Println("Creating topup transaction...")
 
+	reader := bufio.NewReader(os.Stdin)
+
 	// get user input for amount to topup
 	var transaction model.Transaction
 	transaction.TransactionType = "Topup"
@@ -424,11 +470,14 @@ func TopupBalance(AmountTopup int) {
 	// Prompt user for confirmation
 	fmt.Print("Invoice Paid? (y/n): ")
 	var confirm string
-	_, err = fmt.Scanln(&confirm)
+
+	confirm, err = reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error reading confirmation:", err)
 		return
 	}
+	confirm = strings.TrimSpace(confirm)
+
 	// Check if the user confirmed the payment
 	if confirm == "y" || confirm == "Y" {
 		UpdateTransaction(trans.ID)
@@ -509,11 +558,18 @@ func ConfirmPendingTransaction() {
 	var transactionID int
 	for {
 		fmt.Print("Enter Transaction ID: ")
-		_, err := fmt.Scanln(&transactionID)
+		transactionIDStr, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Transaction ID:", err)
 			continue
 		}
+		transactionIDStr = strings.TrimSpace(transactionIDStr)
+		transactionID, err = strconv.Atoi(transactionIDStr)
+		if err != nil {
+			fmt.Println("Invalid Transaction ID. Please enter a valid number.")
+			continue
+		}
+
 		if transactionID <= 0 {
 			fmt.Println("Invalid Transaction ID. Please enter a positive number.")
 			continue
@@ -633,15 +689,25 @@ func RentABook() {
 	// Rent a book
 	fmt.Println("Renting a book...")
 
+	reader := bufio.NewReader(os.Stdin)
+
 	// Prompt user for book ID
 	var book_id int
 	for {
 		fmt.Print("Enter Book ID: ")
-		_, err := fmt.Scanln(&book_id)
+		book_idStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Book ID:", err)
 			continue
 		}
+
+		book_idStr = strings.TrimSpace(book_idStr)
+		book_id, err = strconv.Atoi(book_idStr)
+		if err != nil {
+			fmt.Println("Invalid Book ID. Please enter a valid number.")
+			continue
+		}
+
 		if book_id <= 0 {
 			fmt.Println("Invalid Book ID. Please enter a positive number.")
 			continue
@@ -691,9 +757,15 @@ func RentABook() {
 	var quantity int
 	for {
 		fmt.Print("Enter Quantity: ")
-		_, err = fmt.Scanln(&quantity)
+		quantityStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Quantity:", err)
+			continue
+		}
+		quantityStr = strings.TrimSpace(quantityStr)
+		quantity, err = strconv.Atoi(quantityStr)
+		if err != nil {
+			fmt.Println("Invalid Quantity. Please enter a valid number.")
 			continue
 		}
 		if quantity <= 0 {
@@ -705,9 +777,15 @@ func RentABook() {
 	var numberOfDays int
 	for {
 		fmt.Print("Enter Number of Days: ")
-		_, err = fmt.Scanln(&numberOfDays)
+		numberOfDaysStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Number of Days:", err)
+			continue
+		}
+		numberOfDaysStr = strings.TrimSpace(numberOfDaysStr)
+		numberOfDays, err = strconv.Atoi(numberOfDaysStr)
+		if err != nil {
+			fmt.Println("Invalid Number of Days. Please enter a valid number.")
 			continue
 		}
 		if numberOfDays <= 0 {
@@ -801,11 +879,18 @@ func RentABook() {
 	var paymentMethod string
 	for {
 		fmt.Print("Your payment choice: ")
-		_, err = fmt.Scanln(&paymentChoice)
+		paymentChoiceStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading payment choice:", err)
 			continue
 		}
+		paymentChoiceStr = strings.TrimSpace(paymentChoiceStr)
+		paymentChoice, err = strconv.Atoi(paymentChoiceStr)
+		if err != nil {
+			fmt.Println("Invalid payment choice. Please select 1 for App Balance or 2 for Payment Gateway.")
+			continue
+		}
+
 		if paymentChoice == 1 {
 			paymentMethod = "App Balance"
 			break
@@ -893,11 +978,15 @@ func RentABook() {
 		fmt.Println("Please confirm if you already paid the invoice")
 		fmt.Print("Invoice Paid? (y/n): ")
 		var confirm string
-		_, err = fmt.Scanln(&confirm)
+		confirm, err = reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading confirmation:", err)
 			fmt.Println("Transaction not confirmed. Please try again later using Confirm Pending Transaction Menu.")
 			return
+		}
+		confirm = strings.TrimSpace(confirm)
+		if err != nil {
+			fmt.Println("Error reading confirmation:", err)
 		}
 		if confirm == "y" || confirm == "Y" {
 			UpdateTransaction(transResp.ID)
@@ -966,13 +1055,22 @@ func ReturnABook() {
 	// Return a book
 	fmt.Println("Starting return book...")
 
+	reader := bufio.NewReader(os.Stdin)
+
 	// Prompt user for rent ID
 	var rent_id int
 	for {
 		fmt.Print("Enter Rent ID: ")
-		_, err := fmt.Scanln(&rent_id)
+
+		rent_idStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Rent ID:", err)
+			continue
+		}
+		rent_idStr = strings.TrimSpace(rent_idStr)
+		rent_id, err = strconv.Atoi(rent_idStr)
+		if err != nil {
+			fmt.Println("Invalid Rent ID. Please enter a valid number.")
 			continue
 		}
 		break
@@ -1106,13 +1204,21 @@ func GetRentHistoryByID() {
 	// Fetch rent history by ID from the API
 	fmt.Println("Fetching rent history by ID...")
 
+	reader := bufio.NewReader(os.Stdin)
+
 	// Prompt user for rent ID
 	var rent_id int
 	for {
 		fmt.Print("Enter Rent ID: ")
-		_, err := fmt.Scanln(&rent_id)
+		rent_idStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Rent ID:", err)
+			continue
+		}
+		rent_idStr = strings.TrimSpace(rent_idStr)
+		rent_id, err = strconv.Atoi(rent_idStr)
+		if err != nil {
+			fmt.Println("Invalid Rent ID. Please enter a valid number.")
 			continue
 		}
 		if rent_id <= 0 {
@@ -1256,15 +1362,27 @@ func GetTransactionByID() {
 	// Fetch transaction by ID from the API
 	fmt.Println("Fetching transaction by ID...")
 
+	reader := bufio.NewReader(os.Stdin)
+
 	// Prompt user for transaction ID
 	var transaction_id int
 	for {
 		fmt.Print("Enter Transaction ID: ")
-		_, err := fmt.Scanln(&transaction_id)
+		transaction_idStr, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading Transaction ID:", err)
 			continue
 		}
+		transaction_idStr = strings.TrimSpace(transaction_idStr)
+		transaction_id, err = strconv.Atoi(transaction_idStr)
+		if err != nil {
+			fmt.Println("Invalid Transaction ID. Please enter a valid number.")
+			continue
+		}
+		if transaction_id <= 0 {
+			fmt.Println("Invalid Transaction ID. Please enter a positive number.")
+		}
+
 		break
 	}
 

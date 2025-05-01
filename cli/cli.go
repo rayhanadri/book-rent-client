@@ -5,20 +5,24 @@ import (
 	"library-client/client"
 	"library-client/model"
 	"library-client/variables"
+	"strconv"
+	"strings"
 
-	// "library-client/variables"
+	"bufio"
+
 	"os"
 
 	"github.com/olekukonko/tablewriter"
 )
 
 func Execute() {
-	menu := ShowMenu()
-	InputMenu(menu)
+	for {
+		menu := ShowMenu()
+		InputMenu(menu)
+	}
 }
 
 func ShowMenu() []model.Menu {
-
 	fmt.Println("===========================================")
 	fmt.Println("Welcome to the Library Book Rent System")
 	fmt.Println("===========================================")
@@ -73,9 +77,18 @@ func ShowMenu() []model.Menu {
 }
 
 func InputMenu(Menu []model.Menu) {
-	var choice int
+	reader := bufio.NewReader(os.Stdin)
+	var choice int = 0
+	fmt.Println("===========================================")
 	fmt.Print("Enter your choice: ")
-	_, err := fmt.Scanln(&choice)
+
+	choiceStr, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return
+	}
+
+	choice, err = strconv.Atoi(strings.TrimSpace(choiceStr))
 	if err != nil {
 		fmt.Println("Invalid input. Please enter a number.")
 		return
@@ -104,7 +117,14 @@ func InputMenu(Menu []model.Menu) {
 		case 2:
 			var AmoutTopup int
 			fmt.Print("Enter Amount to Topup: ")
-			_, err := fmt.Scanln(&AmoutTopup)
+
+			AmoutTopupStr, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Println("Error reading input:", err)
+				return
+			}
+			AmoutTopupStr = strings.TrimSpace(AmoutTopupStr)
+			AmoutTopup, err = strconv.Atoi(AmoutTopupStr)
 			if err == nil {
 				client.TopupBalance(AmoutTopup)
 			} else {
@@ -115,12 +135,19 @@ func InputMenu(Menu []model.Menu) {
 		case 4:
 			var bookID int
 			fmt.Print("Enter Book ID: ")
-			_, err := fmt.Scanln(&bookID)
-			if err == nil {
-				client.GetBookByID(bookID)
-			} else {
-				fmt.Println("Invalid input. Please enter a valid Book ID.")
+
+			bookIDStr, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Println("Error reading input:", err)
+				return
 			}
+			bookIDStr = strings.TrimSpace(bookIDStr)
+			bookID, err = strconv.Atoi(bookIDStr)
+			if err != nil {
+				fmt.Println("Invalid input. Please enter a valid Book ID.")
+				return
+			}
+			client.GetBookByID(bookID)
 		case 5:
 			client.RentABook()
 		case 6:
