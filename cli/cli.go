@@ -45,15 +45,16 @@ func ShowMenu() []model.Menu {
 
 		{No: 5, Name: "Rent a Book", Desc: "Rent a book"},
 		{No: 6, Name: "Return a Book", Desc: "Return a book by Rent ID"},
-		{No: 7, Name: "Get All Rent History", Desc: "Get all rent history"},
-		{No: 8, Name: "Get Rent History Detail", Desc: "Get a rent history by Rent ID"},
+		{No: 7, Name: "Cancel Rent", Desc: "Cancel a rent by Rent ID"},
 
-		{No: 9, Name: "Get All Transactions", Desc: "Get all users transactions"},
-		{No: 10, Name: "Get Transaction Detail By ID", Desc: "Get a transaction by ID"},
-		{No: 11, Name: "Confirm Pending Transaction by ID", Desc: "Confirm a pending transaction by ID"},
+		{No: 8, Name: "Get All Rent History", Desc: "Get all rent history"},
+		{No: 9, Name: "Get Rent History Detail", Desc: "Get a rent history by Rent ID"},
+		{No: 10, Name: "Get All Transactions", Desc: "Get all users transactions"},
+		{No: 11, Name: "Get Transaction Detail", Desc: "Get a transaction detail by ID"},
+		{No: 12, Name: "Confirm Pending Transaction", Desc: "Confirm a pending transaction by ID"},
+		{No: 13, Name: "Cancel Pending Transaction", Desc: "Cancel a pending transaction by ID"},
 
-		// {No: 11, Name: "Refresh Token", Desc: "Refresh your token"},
-		{No: 12, Name: "Logout", Desc: "Log out of your account"},
+		{No: 14, Name: "Logout", Desc: "Log out of your account"},
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -153,16 +154,20 @@ func InputMenu(Menu []model.Menu) {
 		case 6:
 			client.ReturnABook()
 		case 7:
-			client.GetAllRentHistory()
+			client.CancelRent()
 		case 8:
-			client.GetRentHistoryByID()
+			client.GetAllRentHistory()
 		case 9:
-			client.GetAllTransactions()
+			client.GetRentHistoryByID()
 		case 10:
-			client.GetTransactionByID()
+			client.GetAllTransactions()
 		case 11:
-			client.ConfirmPendingTransaction()
+			client.GetTransactionByID()
 		case 12:
+			client.ConfirmPendingTransaction()
+		case 13:
+			client.CancelPendingTransaction()
+		case 14:
 			client.Logout()
 			fmt.Println("You have logged out successfully.")
 		default:

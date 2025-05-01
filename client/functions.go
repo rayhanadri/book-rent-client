@@ -640,6 +640,96 @@ func ConfirmPendingTransaction() {
 	tablewriter.Render()
 }
 
+func CancelPendingTransaction() {
+	// Cancel pending transaction
+	fmt.Println("Get Pending Transaction Data...")
+
+	// Prompt user for transaction ID
+	var transactionID int
+	for {
+		fmt.Print("Enter Transaction ID: ")
+		transactionIDStr, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading Transaction ID:", err)
+			continue
+		}
+		transactionIDStr = strings.TrimSpace(transactionIDStr)
+		transactionID, err = strconv.Atoi(transactionIDStr)
+		if err != nil {
+			fmt.Println("Invalid Transaction ID. Please enter a valid number.")
+			continue
+		}
+
+		if transactionID <= 0 {
+			fmt.Println("Invalid Transaction ID. Please enter a positive number.")
+			continue
+		}
+		break
+	}
+
+	// Hit the API endpoint to fetch transaction by ID
+	resp, err := api.SendRequest(http.MethodDelete, fmt.Sprintf("transactions/cancel-transaction/%d", transactionID), nil)
+	if err != nil {
+		fmt.Println("Error fetching transaction: Error sending request")
+		return
+	}
+	defer resp.Body.Close()
+
+	// Get the response from the API
+	var transResponse model.ResponseApi
+	err = json.NewDecoder(resp.Body).Decode(&transResponse)
+	if err != nil {
+		fmt.Println("Error fetching transaction: Error decoding response")
+		return
+	}
+
+	// Check if the fetch was successful
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized && variables.AccessToken != "" {
+			fmt.Println("Token expired, refreshing token...")
+			RefreshToken()
+			ConfirmPendingTransaction()
+			return
+		}
+		body, _ := io.ReadAll(resp.Body)
+
+		if transResponse.Status != 200 {
+			fmt.Printf("Failed to fetch transaction: %s\n", transResponse.Message)
+		} else {
+			fmt.Printf("Failed to fetch transaction: %s\n", string(body))
+		}
+
+		return
+	}
+
+	var trans model.Transaction
+	dataBytes, err := json.Marshal(transResponse.Data)
+	if err != nil {
+		fmt.Println("Error fetching transaction: Error marshalling response data")
+		return
+	}
+	err = json.Unmarshal(dataBytes, &trans)
+	if err != nil {
+		fmt.Println("Error fetching transaction: Error unmarshalling response data")
+		return
+	}
+
+	// Display the transaction details in a table format
+	tablewriter := tablewriter.NewWriter(os.Stdout)
+	tablewriter.SetHeader([]string{"ID", "Transaction Type", "Payment Method", "Amount", "Status", "Description", "Invoice ID", "Invoice URL"})
+	tablewriter.Append([]string{
+		fmt.Sprintf("%d", trans.ID),
+		trans.TransactionType,
+		trans.PaymentMethod,
+		fmt.Sprintf("%d", trans.Amount),
+		trans.Status,
+		trans.Description,
+		trans.InvoiceID,
+		trans.InvoiceURL,
+	})
+	tablewriter.Render()
+}
+
 func RefreshToken() {
 	// Refresh the access token
 	fmt.Println("Refreshing token...")
@@ -1098,6 +1188,93 @@ func ReturnABook() {
 			fmt.Println("Token expired, refreshing token...")
 			RefreshToken()
 			ReturnABook()
+			return
+		}
+		body, _ := io.ReadAll(resp.Body)
+		if rentResponse.Status != 200 {
+			fmt.Printf("Failed to fetch rent: %s\n", rentResponse.Message)
+		} else {
+			fmt.Printf("Failed to fetch rent: %s\n", string(body))
+		}
+		return
+	}
+
+	var rent model.Rent
+	dataBytes, err := json.Marshal(rentResponse.Data)
+	if err != nil {
+		fmt.Println("Error fetching rent: Error marshalling response data")
+		return
+	}
+	err = json.Unmarshal(dataBytes, &rent)
+	if err != nil {
+		fmt.Println("Error fetching rent: Error unmarshalling response data")
+		return
+	}
+
+	// Display the rent details in a table format
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
+	table.Append([]string{
+		fmt.Sprintf("%d", rent.ID),
+		fmt.Sprintf("%d", rent.BookID),
+		rent.Book.Title,
+		rent.Book.Author,
+		fmt.Sprintf("%d", rent.Quantity),
+		fmt.Sprintf("%d", rent.TotalPrice),
+		rent.RentStatus,
+		rent.RentStartDate.Format("2006-01-02"),
+		rent.RentEndDate.Format("2006-01-02"),
+	})
+	table.Render()
+}
+
+func CancelRent() {
+	// Return a book
+	fmt.Println("Starting cancel rent...")
+
+	reader := bufio.NewReader(os.Stdin)
+
+	// Prompt user for rent ID
+	var rent_id int
+	for {
+		fmt.Print("Enter Rent ID: ")
+
+		rent_idStr, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading Rent ID:", err)
+			continue
+		}
+		rent_idStr = strings.TrimSpace(rent_idStr)
+		rent_id, err = strconv.Atoi(rent_idStr)
+		if err != nil {
+			fmt.Println("Invalid Rent ID. Please enter a valid number.")
+			continue
+		}
+		break
+	}
+
+	// Hit the API endpoint to fetch rent by ID
+	resp, err := api.SendRequest(http.MethodDelete, fmt.Sprintf("rents/cancel/%d", rent_id), nil)
+	if err != nil {
+		fmt.Println("Error fetching rent: Error sending request")
+		return
+	}
+	defer resp.Body.Close()
+
+	// Get the response from the API
+	var rentResponse model.ResponseApi
+	err = json.NewDecoder(resp.Body).Decode(&rentResponse)
+	if err != nil {
+		fmt.Println("Error fetching rent: Error decoding response")
+		return
+	}
+
+	// Check if the fetch was successful
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusUnauthorized && variables.AccessToken != "" {
+			fmt.Println("Token expired, refreshing token...")
+			RefreshToken()
+			CancelRent()
 			return
 		}
 		body, _ := io.ReadAll(resp.Body)
