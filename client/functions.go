@@ -55,7 +55,7 @@ func Register() {
 	newUser.Password = string(bytePassword)
 	fmt.Println() // Print a newline after password input
 
-	fmt.Println("Password:", newUser.Password)
+	// fmt.Println("Password:", newUser.Password)
 
 	newUser.Role = "user"
 	newUser.Status = "ACTIVE"
@@ -140,7 +140,7 @@ func Login() {
 		fmt.Println("Error reading password:", err)
 		return
 	}
-	fmt.Println("Password:", password)
+	// fmt.Println("Password:", password)
 	// Check if the user is already logged in
 	if variables.AccessToken != "" {
 		fmt.Println("You are already logged in.")
