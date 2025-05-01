@@ -5,8 +5,11 @@ import (
 )
 
 type Rent struct {
-	ID            int       `json:"id,omitempty" gorm:"primaryKey"`
-	BookID        int       `json:"book_id" gorm:"not null"`
+	ID int `json:"id,omitempty" gorm:"primaryKey"`
+
+	BookID int  `json:"book_id" gorm:"not null"`
+	Book   Book `json:"book" gorm:"foreignKey:BookID"`
+
 	UserID        int       `json:"user_id" gorm:"not null"`
 	Quantity      int       `json:"quantity" gorm:"not null"`
 	TotalPrice    int       `json:"total_price" gorm:"not null"`

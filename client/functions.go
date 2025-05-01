@@ -779,12 +779,15 @@ func RentABook() {
 
 	// Check if the rent was successful
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Book ID", "Quantity", "Total Price", "Rent Start Date", "Rent End Date"})
+	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rentResp.ID),
+		rentResp.Book.Title,
+		rentResp.Book.Author,
 		fmt.Sprintf("%d", rentResp.BookID),
 		fmt.Sprintf("%d", rentResp.Quantity),
 		fmt.Sprintf("%d", rentResp.TotalPrice),
+		rentResp.RentStatus,
 		rentResp.RentStartDate.Format("2006-01-02"),
 		rentResp.RentEndDate.Format("2006-01-02"),
 	})
@@ -944,9 +947,11 @@ func RentABook() {
 
 	// Display the rent details in a table format
 	table = tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Book ID", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
+	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rentResp2.ID),
+		rentResp2.Book.Title,
+		rentResp2.Book.Author,
 		fmt.Sprintf("%d", rentResp2.BookID),
 		fmt.Sprintf("%d", rentResp2.Quantity),
 		fmt.Sprintf("%d", rentResp2.TotalPrice),
@@ -1020,9 +1025,11 @@ func ReturnABook() {
 
 	// Display the rent details in a table format
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Book ID", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
+	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rent.ID),
+		rent.Book.Title,
+		rent.Book.Author,
 		fmt.Sprintf("%d", rent.BookID),
 		fmt.Sprintf("%d", rent.Quantity),
 		fmt.Sprintf("%d", rent.TotalPrice),
@@ -1078,10 +1085,12 @@ func GetAllRentHistory() {
 
 	// Display the rent history in a table format
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Book ID", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
+	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	for _, rent := range rents {
 		table.Append([]string{
 			fmt.Sprintf("%d", rent.ID),
+			rent.Book.Title,
+			rent.Book.Author,
 			fmt.Sprintf("%d", rent.BookID),
 			fmt.Sprintf("%d", rent.Quantity),
 			fmt.Sprintf("%d", rent.TotalPrice),
@@ -1160,10 +1169,12 @@ func GetRentHistoryByID() {
 
 	// Display the rent details in a table format
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Book ID", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
+	table.SetHeader([]string{"ID", "Book ID", "Title", "Author", "Quantity", "Total Price", "Status", "Rent Start Date", "Rent End Date"})
 	table.Append([]string{
 		fmt.Sprintf("%d", rent.ID),
 		fmt.Sprintf("%d", rent.BookID),
+		rent.Book.Title,
+		rent.Book.Author,
 		fmt.Sprintf("%d", rent.Quantity),
 		fmt.Sprintf("%d", rent.TotalPrice),
 		rent.RentStatus,
